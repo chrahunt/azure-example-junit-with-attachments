@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="utf-8"?><testsuite errors="0" failures="0" name="pytest" skips="0" tests="1" time="2.909"><testcase classname="tests.test__concurrent_futures" file="tests/test__concurrent_futures.py" line="11" name="test_process_executor_runs_nested_function" time="0.006330013275146484"><system-out>{attachment}</system-out></testcase></testsuite>
