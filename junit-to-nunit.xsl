@@ -7,7 +7,12 @@
     <xsl:output method="xml" indent="yes" xalan:indent-amount="4" cdata-section-elements="message stack-trace"/>
 
     <xsl:template match="/">
-        <test-run id="{//testsuite[1]/@name}" testcasecount="{count(//testcase)}" failed="{count(//error) + count(//failure)}" skipped="{count(//skipped)}" duration="{//testsuite[1]/@time}">
+        <test-run id="2"
+                  testcasecount="{count(//testcase)}"
+                  passed="{count(//testcase) - (count(//error) + count(//failure) + count(//skipped))}"
+                  failed="{count(//error) + count(//failure)}"
+                  skipped="{count(//skipped)}"
+                  duration="{//testsuite[1]/@time}">
             <xsl:apply-templates select="testsuite"/>
 
             <xsl:for-each select="testsuites">
@@ -18,6 +23,8 @@
     </xsl:template>
 
     <xsl:template match="testcase">
+        <xsl:param name="assembly_id" tunnel="yes"/>
+
         <xsl:variable name="asserts">
             <xsl:choose>
                 <xsl:when test="@assertions != ''">
@@ -63,7 +70,16 @@
         
         <xsl:variable name="stdout" select="system-out"/>
 
-        <test-case name="{@name}" classname="{@classname}" success="{$success}" time="{$time}" executed="{$executed}" asserts="{$asserts}" result="{$result}">
+        <xsl:variable name="testcase_id" select="position()"/>
+
+        <test-case id="{$assembly_id}-{$testcase_id}"
+                   name="{@name}"
+                   classname="{@classname}"
+                   success="{$success}"
+                   time="{$time}"
+                   executed="{$executed}"
+                   asserts="{$asserts}"
+                   result="{$result}">
             <xsl:apply-templates select="error"/>
             <xsl:apply-templates select="failure"/>
             <xsl:apply-templates select="skipped"/>
@@ -100,13 +116,22 @@
             </xsl:choose>
         </xsl:variable>
 
-        <test-suite name="{@name}" passed="{$success}" duration="{@time}" asserts="{$asserts}" type="Assembly">
+        <xsl:variable name="assembly_id" select="position()"/>
+
+        <test-suite id="{$assembly_id}-0"
+                    name="{@name}"
+                    passed="{$success}"
+                    duration="{@time}"
+                    asserts="{$asserts}"
+                    type="Assembly">
             <xsl:if test="@file != ''">
                 <properties>
                     <property name="file" value="{@file}"/>
                 </properties>
             </xsl:if>
-            <xsl:apply-templates select="testcase"/>
+            <xsl:apply-templates select="testcase">
+                <xsl:with-param name="assembly_id" select="$assembly_id" tunnel="yes"/>
+            </xsl:apply-templates>
             <xsl:apply-templates select="testsuite"/>
         </test-suite>
     </xsl:template>
