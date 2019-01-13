@@ -7,15 +7,14 @@
     <xsl:output method="xml" indent="yes" xalan:indent-amount="4" cdata-section-elements="message stack-trace"/>
 
     <xsl:template match="/">
-        <test-results name="{//testsuite[1]/@name}" total="{count(//testcase)}" failures="{count(//error) + count(//failure)}" not-run="{count(//skipped)}" time="{//testsuite[1]/@time}">
-            <xsl:apply-templates select="testcase"/>
+        <test-run id="{//testsuite[1]/@name}" testcasecount="{count(//testcase)}" failed="{count(//error) + count(//failure)}" skipped="{count(//skipped)}" duration="{//testsuite[1]/@time}">
             <xsl:apply-templates select="testsuite"/>
 
             <xsl:for-each select="testsuites">
                 <xsl:apply-templates select="testcase"/>
                 <xsl:apply-templates select="testsuite"/>
             </xsl:for-each>
-        </test-results>
+        </test-run>
     </xsl:template>
 
     <xsl:template match="testcase">
@@ -64,13 +63,7 @@
         
         <xsl:variable name="stdout" select="system-out"/>
 
-        <test-case name="{@name}" description="{@classname}" success="{$success}" time="{$time}" executed="{$executed}" asserts="{$asserts}" result="{$result}">
-            <xsl:if test="@classname != ''">
-                <categories>
-                    <category name="{@classname}" />
-                </categories>
-            </xsl:if>
-
+        <test-case name="{@name}" classname="{@classname}" success="{$success}" time="{$time}" executed="{$executed}" asserts="{$asserts}" result="{$result}">
             <xsl:apply-templates select="error"/>
             <xsl:apply-templates select="failure"/>
             <xsl:apply-templates select="skipped"/>
@@ -107,16 +100,14 @@
             </xsl:choose>
         </xsl:variable>
 
-        <test-suite name="{@name}" description="{@file}" success="{$success}" time="{@time}" asserts="{$asserts}" type="Assembly">
+        <test-suite name="{@name}" passed="{$success}" duration="{@time}" asserts="{$asserts}" type="Assembly">
             <xsl:if test="@file != ''">
-                <categories>
-                    <category name="{@file}" />
-                </categories>
+                <properties>
+                    <property name="file" value="{@file}"/>
+                </properties>
             </xsl:if>
-            <results>
-                <xsl:apply-templates select="testcase"/>
-                <xsl:apply-templates select="testsuite"/>
-            </results>
+            <xsl:apply-templates select="testcase"/>
+            <xsl:apply-templates select="testsuite"/>
         </test-suite>
     </xsl:template>
 
@@ -124,10 +115,10 @@
         <xsl:variable name="message">
             <xsl:choose>
                 <xsl:when test="@message != ''">
-                    <xsl:value-of select="@message"></xsl:value-of>
+                    <xsl:value-of select="@message"/>
                 </xsl:when>
                 <xsl:when test="@type != ''">
-                    <xsl:value-of select="@type"></xsl:value-of>
+                    <xsl:value-of select="@type"/>
                 </xsl:when>
                 <xsl:otherwise>No message</xsl:otherwise>
             </xsl:choose>
@@ -155,10 +146,10 @@
         <xsl:variable name="message">
             <xsl:choose>
                 <xsl:when test="@message != ''">
-                    <xsl:value-of select="@message"></xsl:value-of>
+                    <xsl:value-of select="@message"/>
                 </xsl:when>
                 <xsl:when test="@type != ''">
-                    <xsl:value-of select="@type"></xsl:value-of>
+                    <xsl:value-of select="@type"/>
                 </xsl:when>
                 <xsl:otherwise>No message</xsl:otherwise>
             </xsl:choose>
@@ -167,18 +158,18 @@
         <xsl:variable name="stacktrace">
             <xsl:choose>
                 <xsl:when test="text() != ''">
-                    <xsl:value-of select="text()"></xsl:value-of>
+                    <xsl:value-of select="text()"/>
                 </xsl:when>
                 <xsl:when test="@type != ''">
-                    <xsl:value-of select="@type"></xsl:value-of>
+                    <xsl:value-of select="@type"/>
                 </xsl:when>
                 <xsl:otherwise>No stack trace</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
 
         <failure>
-            <message><xsl:value-of select="$message"></xsl:value-of></message>
-            <stack-trace><xsl:value-of select="$stacktrace"></xsl:value-of></stack-trace>
+            <message><xsl:value-of select="$message"/></message>
+            <stack-trace><xsl:value-of select="$stacktrace"/></stack-trace>
         </failure>
     </xsl:template>
 
