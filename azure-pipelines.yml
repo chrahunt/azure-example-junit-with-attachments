@@ -12,6 +12,9 @@ jobs:
         python.version: '3.7'
     maxParallel: 4
 
+  variables:
+    system.debug: true
+
   steps:
   - task: UsePythonVersion@0
     inputs:
