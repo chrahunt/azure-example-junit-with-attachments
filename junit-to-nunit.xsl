@@ -3,16 +3,41 @@
      
      This file is licensed under GPLv2 per https://github.com/artberri/junit-to-nunit/blob/1a000edd1a5c8ffd0c83a16de632e4cc897200d8/LICENSE.
 -->
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xalan="http://xml.apache.org/xslt">
-    <xsl:output method="xml" indent="yes" xalan:indent-amount="4" cdata-section-elements="message stack-trace"/>
+<xsl:stylesheet version="1.0"
+                xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:xalan="http://xml.apache.org/xslt">
+    <xsl:output method="xml"
+                indent="yes"
+                xalan:indent-amount="4"
+                cdata-section-elements="message stack-trace"/>
 
     <xsl:template match="/">
-        <test-run id="2"
-                  testcasecount="{count(//testcase)}"
-                  passed="{count(//testcase) - (count(//error) + count(//failure) + count(//skipped))}"
-                  failed="{count(//error) + count(//failure)}"
-                  skipped="{count(//skipped)}"
-                  duration="{//testsuite[1]/@time}">
+        <xsl:variable name="skipped" select="count(//skipped)"/>
+        <xsl:variable name="failed" select="count(//error) + count(//failure)"/>
+        <xsl:variable name="total" select="count(//testcase)"/>
+        <xsl:variable name="passed" select="$total - $failed - $skipped"/>
+        <xsl:variable name="result">
+            <xsl:choose>
+                <xsl:when test="$failed > 0">Failed</xsl:when>
+                <xsl:when test="$passed = 0">Skipped</xsl:when>
+                <xsl:otherwise>Passed</xsl:otherwise>
+            </xsl:choose>
+        </xsl:variable>
+        <test-run duration="{//testsuite[1]/@time}"
+                  failed="{$failed}"
+                  fullname="tests"
+                  id="2"
+                  inconclusive="0"
+                  name="tests"
+                  asserts="0"
+                  random-seed="0"
+                  passed="{$passed}"
+                  result="{$result}"
+                  skipped="{$skipped}"
+                  testcasecount="{$total}"
+                  total="{$total}">
+            <command-line/>
+            <filter/>
             <xsl:apply-templates select="testsuite"/>
 
             <xsl:for-each select="testsuites">
@@ -63,8 +88,8 @@
         <xsl:variable name="result">
             <xsl:choose>
                 <xsl:when test="count(skipped) > 0">Skipped</xsl:when>
-                <xsl:when test="count(*) > 0">Failure</xsl:when>
-                <xsl:otherwise>Success</xsl:otherwise>
+                <xsl:when test="count(*) > 0">Failed</xsl:when>
+                <xsl:otherwise>Passed</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
         
@@ -73,16 +98,15 @@
         <xsl:variable name="testcase_id" select="position()"/>
 
         <test-case id="{$assembly_id}-{$testcase_id}"
-                   name="{@name}"
-                   classname="{@classname}"
-                   success="{$success}"
-                   time="{$time}"
-                   executed="{$executed}"
                    asserts="{$asserts}"
-                   result="{$result}">
-            <xsl:apply-templates select="error"/>
-            <xsl:apply-templates select="failure"/>
-            <xsl:apply-templates select="skipped"/>
+                   classname="{@classname}"
+                   duration="{$time}"
+                   fullname="{@name}"
+                   name="{@name}"
+                   result="{$result}"
+                   runstate="Runnable"
+                   seed="0"
+                   >
             <attachments>
                 <xsl:analyze-string
                     select="$stdout"
@@ -94,36 +118,43 @@
                     </xsl:matching-substring>
                 </xsl:analyze-string>
             </attachments>
+            <xsl:apply-templates select="error"/>
+            <xsl:apply-templates select="failure"/>
+            <xsl:apply-templates select="skipped"/>
         </test-case>
     </xsl:template>
 
     <xsl:template match="testsuite">
-        <xsl:variable name="success">
+        <xsl:variable name="skipped" select="count(//skipped)"/>
+        <xsl:variable name="failed" select="count(.//error) + count(.//failure)"/>
+        <xsl:variable name="total" select="count(.//testcase)"/>
+        <xsl:variable name="passed" select="$total - $failed - $skipped"/>
+        <xsl:variable name="result">
             <xsl:choose>
-                <xsl:when test="count(//testcase/*) > 0">False</xsl:when>
-                <xsl:otherwise>True</xsl:otherwise>
-            </xsl:choose>
-        </xsl:variable>
-
-        <xsl:variable name="asserts">
-            <xsl:choose>
-                <xsl:when test="@assertions != ''">
-                    <xsl:value-of select="@assertions"></xsl:value-of>
-                </xsl:when>
-                <xsl:otherwise>
-                    <xsl:value-of select="count(//testcase) - count(//testcase/*)"></xsl:value-of>
-                </xsl:otherwise>
+                <xsl:when test="$failed > 0">Failed</xsl:when>
+                <xsl:when test="$passed = 0">Skipped</xsl:when>
+                <xsl:otherwise>Passed</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
 
         <xsl:variable name="assembly_id" select="position()"/>
 
-        <test-suite id="{$assembly_id}-0"
-                    name="{@name}"
-                    passed="{$success}"
+        <test-suite asserts="0"
                     duration="{@time}"
-                    asserts="{$asserts}"
-                    type="Assembly">
+                    failed="{$failed}"
+                    fullname="{@name}"
+                    id="{$assembly_id}-0"
+                    inconclusive="0"
+                    name="{@name}"
+                    passed="{$passed}"
+                    result="{$result}"
+                    runstate="Runnable"
+                    skipped="{$skipped}"
+                    testcasecount="{$total}"
+                    total="{$total}"
+                    type="Assembly"
+                    warnings="0"
+                    >
             <xsl:if test="@file != ''">
                 <properties>
                     <property name="file" value="{@file}"/>

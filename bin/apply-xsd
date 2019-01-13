@@ -1,0 +1,11 @@
+#!/bin/sh
+# Usage: apply-xsd schema.xsd file.xml|-
+# if -, then read from stdin
+# Run get-xerces first.
+jar="${XDG_CACHE_HOME:-$HOME/.cache}/xerces/2.12.0/xercesSamples.jar"
+if [ "$2" = "-" ]; then
+    file=/dev/stdin
+else
+    file="$2"
+fi
+exec java -cp "$jar" jaxp.SourceValidator -a "$1" -i "$file"
