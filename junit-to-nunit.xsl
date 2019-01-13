@@ -107,7 +107,7 @@
             </xsl:choose>
         </xsl:variable>
 
-        <test-suite name="{@name}" description="{@file}" success="{$success}" time="{@time}" asserts="{$asserts}">
+        <test-suite name="{@name}" description="{@file}" success="{$success}" time="{@time}" asserts="{$asserts}" type="Assembly">
             <xsl:if test="@file != ''">
                 <categories>
                     <category name="{@file}" />
