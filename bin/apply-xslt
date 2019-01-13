@@ -1,0 +1,5 @@
+#!/bin/sh
+# Usage: apply-xslt transform.xsl file.xml
+# Run get-saxon first.
+jar="${XDG_CACHE_HOME:-$HOME/.cache}/saxon/Saxon-HE-9.9.0-2.jar"
+exec java -jar "$jar" -xsl:"$1" -s:"$2"

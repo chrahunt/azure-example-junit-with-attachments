@@ -1,0 +1,5 @@
+#!/bin/sh
+umask 077
+cache_home="${XDG_CACHE_HOME:-$HOME/.cache}/saxon"
+mkdir -p "$cache_home"
+exec mvn dependency:copy -Dartifact=net.sf.saxon:Saxon-HE:9.9.0-2:jar -DoutputDirectory="$cache_home"

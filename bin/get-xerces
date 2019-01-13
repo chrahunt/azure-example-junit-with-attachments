@@ -1,0 +1,13 @@
+#!/bin/sh
+umask 077
+cache_home="${XDG_CACHE_HOME:-$HOME/.cache}/xerces"
+mkdir -p "$cache_home"
+cd "$cache_home"
+curl http://apache.mirrors.ionfish.org//xerces/j/binaries/Xerces-J-bin.2.12.0.tar.gz | tar xzf -
+mv xerces-2_12_0 2.12.0
+digest="$(sha256sum 2.12.0/xercesSamples.jar | awk '{print $1}')"
+if [ "$digest" != "6e3fdacb6b48bed3e92ca3ef3e1e22bf2944b55238257f685732cf7d82c133a7" ]; then
+    echo "Jar validation failed."
+    rm -rf "$cache_home"
+    exit 1
+fi
