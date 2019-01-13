@@ -21,9 +21,10 @@ jobs:
   - script: 'python3 make.py --input test-results.xml --attachment attachment.txt --output final-results.xml'
     displayName: Run tests
 
+  - script: 'xsltproc junit-to-nunit.xsl final-results.xml > nunit-results.xml'
   - task: PublishTestResults@2
     inputs:
-      testResultsFiles: '**/final-results.xml'
+      testResultsFiles: 'nunit-results.xml'
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
     displayName: Publish test results
