@@ -18,20 +18,20 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - script: 'python3 make.py --input test-results.xml --attachment attachment.txt --output final-results.xml'
+  - script: 'python3 make.py --input test-results.xml --attachment attachment.txt --output junit/final-results.xml'
     displayName: Run tests
 
   - script: 'mvn dependency:copy -Dartifact=net.sf.saxon:Saxon-HE:9.9.0-2:jar -DoutputDirectory=.'
     condition: succeededOrFailed()
     displayName: Get saxon utility
 
-  - script: 'java -jar Saxon-HE-9.9.0-2.jar -s:final-results.xml -xsl:junit-to-nunit.xsl -o:nunit-results.xml'
+  - script: 'java -jar Saxon-HE-9.9.0-2.jar -s:junit/final-results.xml -xsl:junit-to-nunit.xsl -o:junit/nunit-results.xml'
     condition: succeededOrFailed()
     displayName: Convert test results
 
   - task: PublishTestResults@2
     inputs:
-      testResultsFiles: 'nunit-results.xml'
+      testResultsFiles: 'junit/nunit-results.xml'
       testResultsFormat: NUnit
       testRunTitle: 'Python $(python.version)'
     condition: succeededOrFailed()
@@ -39,6 +39,6 @@ jobs:
 
   - task: PublishPipelineArtifact@0
     inputs:
-      artifactName: artifacts
-      targetPath: final-results.xml
+      artifactName: test_results
+      targetPath: junit/
     displayName: Publish artifacts
