@@ -1,8 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- From https://github.com/artberri/junit-to-nunit/blob/1a000edd1a5c8ffd0c83a16de632e4cc897200d8/junit-to-nunit.xsl
      
      This file is licensed under GPLv2 per https://github.com/artberri/junit-to-nunit/blob/1a000edd1a5c8ffd0c83a16de632e4cc897200d8/LICENSE.
 -->
-<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:xalan="http://xml.apache.org/xslt">
     <xsl:output method="xml" indent="yes" xalan:indent-amount="4" cdata-section-elements="message stack-trace"/>
 
@@ -61,6 +61,8 @@
                 <xsl:otherwise>Success</xsl:otherwise>
             </xsl:choose>
         </xsl:variable>
+        
+        <xsl:variable name="stdout" select="system-out"/>
 
         <test-case name="{@name}" description="{@classname}" success="{$success}" time="{$time}" executed="{$executed}" asserts="{$asserts}" result="{$result}">
             <xsl:if test="@classname != ''">
@@ -72,6 +74,17 @@
             <xsl:apply-templates select="error"/>
             <xsl:apply-templates select="failure"/>
             <xsl:apply-templates select="skipped"/>
+            <attachments>
+                <xsl:analyze-string
+                    select="$stdout"
+                    regex="\[\[ATTACHMENT\|([^\]]+?)\]\]">
+                    <xsl:matching-substring>
+                        <attachment>
+                            <filePath><xsl:value-of select="regex-group(1)"/></filePath>
+                        </attachment>
+                    </xsl:matching-substring>
+                </xsl:analyze-string>
+            </attachments>
         </test-case>
     </xsl:template>
 

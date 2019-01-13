@@ -21,7 +21,14 @@ jobs:
   - script: 'python3 make.py --input test-results.xml --attachment attachment.txt --output final-results.xml'
     displayName: Run tests
 
-  - script: 'xsltproc junit-to-nunit.xsl final-results.xml > nunit-results.xml'
+  - script: 'mvn dependency:copy -Dartifact=net.sf.saxon:Saxon-HE:9.9.0-2:jar -DoutputDirectory=.'
+    condition: succeededOrFailed()
+    displayName: Get saxon utility
+
+  - script: 'java -jar Saxon-HE-9.9.0-2.jar -s:final-results.xml -xsl:junit-to-nunit.xsl -o:nunit-results.xml'
+    condition: succeededOrFailed()
+    displayName: Convert test results
+
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: 'nunit-results.xml'
