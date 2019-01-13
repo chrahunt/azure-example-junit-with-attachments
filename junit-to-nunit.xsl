@@ -97,6 +97,18 @@
 
         <xsl:variable name="testcase_id" select="position()"/>
 
+        <xsl:variable name="attachments">
+            <xsl:analyze-string
+                select="$stdout"
+                regex="\[\[ATTACHMENT\|([^\]]+?)\]\]">
+                <xsl:matching-substring>
+                    <attachment>
+                        <filePath><xsl:value-of select="regex-group(1)"/></filePath>
+                    </attachment>
+                </xsl:matching-substring>
+            </xsl:analyze-string>
+        </xsl:variable>
+
         <test-case id="{$assembly_id}-{$testcase_id}"
                    asserts="{$asserts}"
                    classname="{@classname}"
@@ -107,17 +119,11 @@
                    runstate="Runnable"
                    seed="0"
                    >
-            <attachments>
-                <xsl:analyze-string
-                    select="$stdout"
-                    regex="\[\[ATTACHMENT\|([^\]]+?)\]\]">
-                    <xsl:matching-substring>
-                        <attachment>
-                            <filePath><xsl:value-of select="regex-group(1)"/></filePath>
-                        </attachment>
-                    </xsl:matching-substring>
-                </xsl:analyze-string>
-            </attachments>
+            <xsl:if test="$attachments != ''">
+                <attachments>
+                    <xsl:copy-of select="$attachments"/>
+                </attachments>
+            </xsl:if>
             <xsl:apply-templates select="error"/>
             <xsl:apply-templates select="failure"/>
             <xsl:apply-templates select="skipped"/>
