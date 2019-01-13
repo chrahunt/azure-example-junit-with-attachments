@@ -18,6 +18,9 @@ jobs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
+  - script: mkdir junit
+    displayName: Make output directory
+
   - script: 'python3 make.py --input test-results.xml --attachment attachment.txt --output junit/final-results.xml'
     displayName: Run tests
 
